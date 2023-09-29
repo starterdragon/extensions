@@ -8,8 +8,8 @@ import com.lagradost.cloudstream3.utils.loadExtractor
 import java.net.URLEncoder
 
 class InvidiousProvider : MainAPI() { // all providers must be an instance of MainAPI
-    override var mainUrl = "https://y.com.sb"
-    override var name = "Invidious" // name of provider
+    override var mainUrl = "https://dopebox.to"
+    override var name = "D[]pe B[]x" // name of provider
     override val supportedTypes = setOf(TvType.Others)
 
     override var lang = "en"
@@ -27,13 +27,13 @@ class InvidiousProvider : MainAPI() { // all providers must be an instance of Ma
         return newHomePageResponse(
             listOf(
                 HomePageList(
-                    "Popular",
-                    popular?.map { it.toSearchResponse(this) } ?: emptyList(),
+                    "Movie",
+                    movie?.map { it.toSearchResponse(this) } ?: emptyList(),
                     true
                 ),
                 HomePageList(
-                    "Trending",
-                    trending?.map { it.toSearchResponse(this) } ?: emptyList(),
+                    "TV Show",
+                    tv-show?.map { it.toSearchResponse(this) } ?: emptyList(),
                     true
                 )
             ),
@@ -44,7 +44,7 @@ class InvidiousProvider : MainAPI() { // all providers must be an instance of Ma
     // this function gets called when you search for something
     override suspend fun search(query: String): List<SearchResponse> {
         val res = tryParseJson<List<SearchEntry>>(
-            app.get("$mainUrl/api/v1/search?q=${query.encodeUri()}&page=1&type=video&fields=videoId,title").text
+            app.get("$mainUrl/search/${query.encodeUri()}").text
         )
         return res?.map { it.toSearchResponse(this) } ?: emptyList()
     }
@@ -52,7 +52,7 @@ class InvidiousProvider : MainAPI() { // all providers must be an instance of Ma
     override suspend fun load(url: String): LoadResponse? {
         val videoId = Regex("watch\\?v=([a-zA-Z0-9_-]+)").find(url)?.groups?.get(1)?.value
         val res = tryParseJson<VideoEntry>(
-            app.get("$mainUrl/api/v1/videos/$videoId?fields=videoId,title,description,recommendedVideos,author,authorThumbnails,formatStreams").text
+            app.get("$mainUrl/search/").text
         )
         return res?.toLoadResponse(this)
     }
@@ -64,7 +64,7 @@ class InvidiousProvider : MainAPI() { // all providers must be an instance of Ma
         fun toSearchResponse(provider: InvidiousProvider): SearchResponse {
             return provider.newMovieSearchResponse(
                 title,
-                "${provider.mainUrl}/watch?v=$videoId",
+                "${provider.mainUrl}/movie/watch-${videoId}",
                 TvType.Movie
             ) {
                 this.posterUrl = "${provider.mainUrl}/vi/$videoId/mqdefault.jpg"
